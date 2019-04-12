@@ -21,6 +21,7 @@ import Captions from './Captions/Captions';
 import PlayPause from './PlayPause/PlayPause';
 import Fullscreen from './Fullscreen/Fullscreen';
 import Overlay from './Overlay/Overlay';
+import Subtitle from './Subtitle/Subtitle';
 
 const DefaultPlayer = ({
     copy,
@@ -29,6 +30,8 @@ const DefaultPlayer = ({
     controls,
     children,
     className,
+    addedWords,
+    meanings,
     onSeekChange,
     onVolumeChange,
     onVolumeClick,
@@ -36,79 +39,99 @@ const DefaultPlayer = ({
     onPlayPauseClick,
     onFullscreenClick,
     onCaptionsItemClick,
+    onSubtitleHover,
+    onSubtitleWordClick,
+    onSubtitleWordAdd,
     ...restProps
 }) => {
     return (
-        <div className={[
-            styles.component,
-            className
-        ].join(' ')}
-        style={style}>
-            <video
-                className={styles.video}
-                {...restProps}>
-                { children }
+        <div
+            className={[styles.component, className].join(" ")}
+            style={style}
+        >
+            <video className={styles.video} {...restProps}>
+                {children}
             </video>
-            <Overlay
-                onClick={onPlayPauseClick}
-                {...video} />
-            { controls && controls.length && !video.error
-                ? <div className={styles.controls}>
-                        { controls.map((control, i) => {
-                            switch (control) {
-                                case 'Seek':
-                                    return <Seek
+            <Overlay onClick={onPlayPauseClick} {...video} />
+            {controls && controls.indexOf("Subtitle") >= 0 && (
+                <Subtitle
+                    addedWords={addedWords}
+                    meanings={meanings}
+                    onHover={onSubtitleHover}
+                    onWordClick={onSubtitleWordClick}
+                    onWordAdd={onSubtitleWordAdd}
+                    {...video}
+                />
+            )}
+            {controls && controls.length && !video.error ? (
+                <div className={styles.controls}>
+                    {controls.map((control, i) => {
+                        switch (control) {
+                            case "Seek":
+                                return (
+                                    <Seek
                                         key={i}
                                         ariaLabel={copy.seek}
                                         className={styles.seek}
                                         onChange={onSeekChange}
-                                        {...video} />;
-                                case 'PlayPause':
-                                    return <PlayPause
+                                        {...video}
+                                    />
+                                );
+                            case "PlayPause":
+                                return (
+                                    <PlayPause
                                         key={i}
                                         ariaLabelPlay={copy.play}
                                         ariaLabelPause={copy.pause}
                                         onClick={onPlayPauseClick}
-                                        {...video} />;
-                                case 'Fullscreen':
-                                    return <Fullscreen
+                                        {...video}
+                                    />
+                                );
+                            case "Fullscreen":
+                                return (
+                                    <Fullscreen
                                         key={i}
                                         ariaLabel={copy.fullscreen}
                                         onClick={onFullscreenClick}
-                                        {...video} />;
-                                case 'Time':
-                                    return <Time
-                                        key={i}
-                                        {...video} />;
-                                case 'Volume':
-                                    return <Volume
+                                        {...video}
+                                    />
+                                );
+                            case "Time":
+                                return <Time key={i} {...video} />;
+                            case "Volume":
+                                return (
+                                    <Volume
                                         key={i}
                                         onClick={onVolumeClick}
                                         onChange={onVolumeChange}
                                         ariaLabelMute={copy.mute}
                                         ariaLabelUnmute={copy.unmute}
                                         ariaLabelVolume={copy.volume}
-                                        {...video} />;
-                                case 'Captions':
-                                    return video.textTracks && video.textTracks.length
-                                        ? <Captions
-                                            key={i}
-                                            onClick={onCaptionsClick}
-                                            ariaLabel={copy.captions}
-                                            onItemClick={onCaptionsItemClick}
-                                            {...video}/>
-                                        : null;
-                                default:
-                                    return null;
-                            }
-                        }) }
-                    </div>
-                : null }
+                                        {...video}
+                                    />
+                                );
+                            case "Captions":
+                                return video.textTracks &&
+                                    video.textTracks.length ? (
+                                    <Captions
+                                        key={i}
+                                        onClick={onCaptionsClick}
+                                        ariaLabel={copy.captions}
+                                        onItemClick={onCaptionsItemClick}
+                                        {...video}
+                                    />
+                                ) : null;
+                            default:
+                                return null;
+                        }
+                    })}
+                </div>
+            ) : null}
         </div>
     );
 };
 
-const controls = ['PlayPause', 'Seek', 'Time', 'Volume', 'Fullscreen', 'Captions'];
+const controls = ['PlayPause', 'Seek', 'Time', 'Volume', 'Fullscreen', 'Captions', 'Subtitle'];
 
 DefaultPlayer.defaultProps = {
     copy,
@@ -145,7 +168,7 @@ const connectedPlayer = videoConnect(
         onPlayPauseClick: () => togglePause(videoEl, state),
         onCaptionsItemClick: (track) => showTrack(state, track),
         onVolumeChange: (e) => setVolume(videoEl, state, e.target.value),
-        onSeekChange: (e) => setCurrentTime(videoEl, state, e.target.value * state.duration / 100)
+        onSeekChange: (e) => setCurrentTime(videoEl, state, e.target.value * state.duration / 100),
     })
 );
 
@@ -158,5 +181,6 @@ export {
     Captions,
     PlayPause,
     Fullscreen,
-    Overlay
+    Overlay,
+    Subtitle
 };

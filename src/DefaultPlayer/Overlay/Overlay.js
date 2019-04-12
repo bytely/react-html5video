@@ -9,7 +9,7 @@ export default class Overlay extends Component {
         const {
             error,
             paused,
-            loading
+            loading,
         } = this.props;
         const iconProps = {
             className: styles.icon,

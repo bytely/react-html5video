@@ -68,19 +68,23 @@ export const showTrack = ({ textTracks }, track) => {
     track.mode = track.SHOWING || 'showing';
 };
 
-export const hideTracks = ({ textTracks }) => {
+export const hideTracks = ({ textTracks, controls }) => {
     for (var i = 0; i < textTracks.length; i++) {
-        textTracks[i].mode = textTracks[i].DISABLED || 'disabled';
+        if (i === 0 && controls && controls.indexOf('Subtitle') >= 0) {
+            textTracks[i].mode = textTracks[i].HIDDEN || 'hidden';
+        } else {
+            textTracks[i].mode = textTracks[i].DISABLED || 'disabled';
+        }
     }
 };
 
 export const toggleTracks = (() => {
     let previousTrack;
-    return ({ textTracks }) => {
+    return ({ textTracks, controls }) => {
         let currentTrack = [...textTracks]
             .filter((track) => track.mode === track.SHOWING || track.mode === 'showing')[0];
         if (currentTrack) {
-            hideTracks({ textTracks });
+            hideTracks({ textTracks, controls });
             previousTrack = currentTrack;
         } else {
             showTrack({ textTracks }, previousTrack || textTracks[0]);

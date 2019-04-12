@@ -1,6 +1,6 @@
 .component {
     position: relative;
-    font-family: Helvetica;
+    font-family: inherit;
     font-size: 11px;
     background-color: #000;
 }

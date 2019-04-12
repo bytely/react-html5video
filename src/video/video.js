@@ -36,6 +36,7 @@ export default (
         constructor(props) {
             super(props);
             this.updateState = this.updateState.bind(this);
+            this.updateCue = this.updateCue.bind(this);
             this.state = {};
         }
 
@@ -46,6 +47,24 @@ export default (
                     return p;
                 }, {})
             );
+        }
+
+        updateCue(event) {
+            this.setState({
+                cue: (event.target.activeCues[0] || {}).text
+            });
+        }
+
+        bindTrackEvents() {
+            const track = this.videoEl.querySelector('track[kind=subtitles][default]');
+            track && track.addEventListener('load', () => {
+                const textTrack = event.target.track;
+                this.textTrack = textTrack;
+                if (textTrack) {
+                    textTrack.mode = 'hidden';
+                    textTrack.addEventListener('cuechange', this.updateCue);
+                }
+            });
         }
 
         bindEventsToUpdateState() {
@@ -89,6 +108,9 @@ export default (
                 const lastSource = sources[sources.length - 1];
                 lastSource.removeEventListener('error', this.updateState);
             }
+
+            this.textTrack
+                && this.textTrack.removeEventListener('cuechange', this.updateCue);
         }
 
         componentWillUnmount() {
@@ -104,6 +126,7 @@ export default (
         componentDidMount() {
             this.videoEl = this.el.getElementsByTagName('video')[0];
             this.bindEventsToUpdateState();
+            this.bindTrackEvents();
         }
 
         render() {

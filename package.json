@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mderrick/react-html5video.git"
+    "url": "https://github.com/bytely/react-html5video.git"
   },
   "keywords": [
     "react-component",
@@ -99,5 +99,8 @@
     "webpack": "^1.13.3",
     "webpack-dev-middleware": "^1.8.4",
     "webpack-hot-middleware": "^2.13.2"
+  },
+  "dependencies": {
+    "memoize-one": "^5.0.4"
   }
 }
