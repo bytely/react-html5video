@@ -3751,6 +3751,7 @@ module.exports =
 
 	        _this.handleHover = _this.handleHover.bind(_this);
 	        _this.handleMouseOut = _this.handleMouseOut.bind(_this);
+	        _this.handleClick = _this.handleClick.bind(_this);
 	        _this.state = {};
 	        return _this;
 	    }
