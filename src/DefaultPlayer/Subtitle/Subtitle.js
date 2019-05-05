@@ -17,13 +17,19 @@ class Subtitle extends PureComponent {
 
         this.handleHover = this.handleHover.bind(this);
         this.handleMouseOut = this.handleMouseOut.bind(this);
+        this.handleClick = this.handleClick.bind(this);
         this.state = {};
     }
 
     handleHover(event) {
         const wordEl = event.target;
+        this.props.onWordHover && this.props.onWordHover(wordEl.textContent)
+    }
+
+    handleClick(event) {
+        const wordEl = event.target;
         this.setState({ wordEl })
-        this.props.onHover && this.props.onHover(wordEl.textContent)
+        this.props.onWordClick && this.props.onWordClick(wordEl.textContent)
     }
 
     handleMouseOut() {
@@ -38,7 +44,7 @@ class Subtitle extends PureComponent {
 
     render() {
         const { wordEl } = this.state;
-        const { onWordClick, onWordAdd, addedWords, meanings } = this.props;
+        const { onWordAdd, addedWords, meanings } = this.props;
 
         const words = extractWords(this.props.cue);
         const word = (wordEl && wordEl.textContent.replace(/^\W|\W$/, '')) || '';
@@ -70,7 +76,7 @@ class Subtitle extends PureComponent {
                             <span
                                 className={styles.word}
                                 onMouseEnter={this.handleHover}
-                                onClick={onWordClick}
+                                onClick={this.handleClick}
                             >
                                 {w}
                             </span>

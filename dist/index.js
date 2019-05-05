@@ -2461,7 +2461,7 @@ module.exports =
 	        controls && controls.indexOf("Subtitle") >= 0 && _react2.default.createElement(_Subtitle2.default, (0, _extends3.default)({
 	            addedWords: addedWords,
 	            meanings: meanings,
-	            onHover: onSubtitleHover,
+	            onWordHover: onSubtitleHover,
 	            onWordClick: onSubtitleWordClick,
 	            onWordAdd: onSubtitleWordAdd
 	        }, video)),
@@ -3759,8 +3759,14 @@ module.exports =
 	        key: "handleHover",
 	        value: function handleHover(event) {
 	            var wordEl = event.target;
+	            this.props.onWordHover && this.props.onWordHover(wordEl.textContent);
+	        }
+	    }, {
+	        key: "handleClick",
+	        value: function handleClick(event) {
+	            var wordEl = event.target;
 	            this.setState({ wordEl: wordEl });
-	            this.props.onHover && this.props.onHover(wordEl.textContent);
+	            this.props.onWordClick && this.props.onWordClick(wordEl.textContent);
 	        }
 	    }, {
 	        key: "handleMouseOut",
@@ -3781,7 +3787,6 @@ module.exports =
 
 	            var wordEl = this.state.wordEl;
 	            var _props = this.props,
-	                onWordClick = _props.onWordClick,
 	                onWordAdd = _props.onWordAdd,
 	                addedWords = _props.addedWords,
 	                meanings = _props.meanings;
@@ -3826,7 +3831,7 @@ module.exports =
 	                                {
 	                                    className: _Subtitle2.default.word,
 	                                    onMouseEnter: _this2.handleHover,
-	                                    onClick: onWordClick
+	                                    onClick: _this2.handleClick
 	                                },
 	                                w
 	                            ),

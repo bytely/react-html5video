@@ -57,7 +57,7 @@ const DefaultPlayer = ({
                 <Subtitle
                     addedWords={addedWords}
                     meanings={meanings}
-                    onHover={onSubtitleHover}
+                    onWordHover={onSubtitleHover}
                     onWordClick={onSubtitleWordClick}
                     onWordAdd={onSubtitleWordAdd}
                     {...video}
