@@ -2023,12 +2023,12 @@ module.exports =
 /* 96 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	exports.getPercentagePlayed = exports.getPercentageBuffered = exports.toggleTracks = exports.hideTracks = exports.showTrack = exports.toggleFullscreen = exports.toggleMute = exports.unmute = exports.mute = exports.setVolume = exports.setCurrentTime = exports.togglePause = undefined;
+	exports.getPercentagePlayed = exports.getPercentageBuffered = exports.toggleTracks = exports.skipCue = exports.hideTracks = exports.showTrack = exports.toggleFullscreen = exports.toggleMute = exports.unmute = exports.mute = exports.setVolume = exports.setCurrentTime = exports.togglePause = undefined;
 
 	var _toConsumableArray2 = __webpack_require__(97);
 
@@ -2098,7 +2098,7 @@ module.exports =
 	    var textTracks = _ref3.textTracks;
 
 	    hideTracks({ textTracks: textTracks });
-	    track.mode = track.SHOWING || 'showing';
+	    track.mode = track.SHOWING || "showing";
 	};
 
 	var hideTracks = exports.hideTracks = function hideTracks(_ref4) {
@@ -2106,10 +2106,45 @@ module.exports =
 	        controls = _ref4.controls;
 
 	    for (var i = 0; i < textTracks.length; i++) {
-	        if (i === 0 && controls && controls.indexOf('Subtitle') >= 0) {
-	            textTracks[i].mode = textTracks[i].HIDDEN || 'hidden';
+	        if (i === 0 && controls && controls.indexOf("Subtitle") >= 0) {
+	            textTracks[i].mode = textTracks[i].HIDDEN || "hidden";
 	        } else {
-	            textTracks[i].mode = textTracks[i].DISABLED || 'disabled';
+	            textTracks[i].mode = textTracks[i].DISABLED || "disabled";
+	        }
+	    }
+	};
+
+	var getCurrentTrack = function getCurrentTrack(videoEl) {
+	    for (var i = 0; i < videoEl.textTracks.length; ++i) {
+	        if (videoEl.textTracks[i].mode !== "disabled") {
+	            return videoEl.textTracks[i];
+	        }
+	    }
+	};
+
+	var skipCue = exports.skipCue = function skipCue(videoEl, next) {
+	    var textTrack = getCurrentTrack(videoEl);
+
+	    if (!textTrack || !textTrack.cues || !textTrack.cues.length) {
+	        return;
+	    }
+
+	    if (next) {
+	        for (var i = 0; i < textTrack.cues.length; ++i) {
+	            var cue = textTrack.cues[i];
+	            if (cue.startTime > videoEl.currentTime) {
+	                videoEl.currentTime = cue.startTime;
+	                break;
+	            }
+	        }
+	    } else {
+	        for (var i = textTrack.cues.length - 1; i >= 0; --i) {
+	            var cue = textTrack.cues[i];
+	            var activeCue = textTrack.activeCues[0];
+	            if (cue.startTime < videoEl.currentTime && (!activeCue || activeCue.id !== cue.id)) {
+	                videoEl.currentTime = cue.startTime;
+	                break;
+	            }
 	        }
 	    }
 	};
@@ -2121,7 +2156,7 @@ module.exports =
 	            controls = _ref5.controls;
 
 	        var currentTrack = [].concat((0, _toConsumableArray3.default)(textTracks)).filter(function (track) {
-	            return track.mode === track.SHOWING || track.mode === 'showing';
+	            return track.mode === track.SHOWING || track.mode === "showing";
 	        })[0];
 	        if (currentTrack) {
 	            hideTracks({ textTracks: textTracks, controls: controls });
@@ -2411,15 +2446,15 @@ module.exports =
 
 	var _PlayPause2 = _interopRequireDefault(_PlayPause);
 
-	var _Fullscreen = __webpack_require__(135);
+	var _Fullscreen = __webpack_require__(137);
 
 	var _Fullscreen2 = _interopRequireDefault(_Fullscreen);
 
-	var _Overlay = __webpack_require__(139);
+	var _Overlay = __webpack_require__(141);
 
 	var _Overlay2 = _interopRequireDefault(_Overlay);
 
-	var _Subtitle = __webpack_require__(144);
+	var _Subtitle = __webpack_require__(146);
 
 	var _Subtitle2 = _interopRequireDefault(_Subtitle);
 
@@ -2444,7 +2479,9 @@ module.exports =
 	        onSubtitleHover = _ref.onSubtitleHover,
 	        onSubtitleWordClick = _ref.onSubtitleWordClick,
 	        onSubtitleWordAdd = _ref.onSubtitleWordAdd,
-	        restProps = (0, _objectWithoutProperties3.default)(_ref, ['copy', 'video', 'style', 'controls', 'children', 'className', 'addedWords', 'meanings', 'onSeekChange', 'onVolumeChange', 'onVolumeClick', 'onCaptionsClick', 'onPlayPauseClick', 'onFullscreenClick', 'onCaptionsItemClick', 'onSubtitleHover', 'onSubtitleWordClick', 'onSubtitleWordAdd']);
+	        onNextCue = _ref.onNextCue,
+	        onPreviousCue = _ref.onPreviousCue,
+	        restProps = (0, _objectWithoutProperties3.default)(_ref, ['copy', 'video', 'style', 'controls', 'children', 'className', 'addedWords', 'meanings', 'onSeekChange', 'onVolumeChange', 'onVolumeClick', 'onCaptionsClick', 'onPlayPauseClick', 'onFullscreenClick', 'onCaptionsItemClick', 'onSubtitleHover', 'onSubtitleWordClick', 'onSubtitleWordAdd', 'onNextCue', 'onPreviousCue']);
 
 	    return _react2.default.createElement(
 	        'div',
@@ -2482,7 +2519,9 @@ module.exports =
 	                            key: i,
 	                            ariaLabelPlay: copy.play,
 	                            ariaLabelPause: copy.pause,
-	                            onClick: onPlayPauseClick
+	                            onClick: onPlayPauseClick,
+	                            onNextClick: onNextCue,
+	                            onPreviousClick: onPreviousCue
 	                        }, video));
 	                    case "Fullscreen":
 	                        return _react2.default.createElement(_Fullscreen2.default, (0, _extends3.default)({
@@ -2570,6 +2609,12 @@ module.exports =
 	        },
 	        onSeekChange: function onSeekChange(e) {
 	            return (0, _api.setCurrentTime)(videoEl, state, e.target.value * state.duration / 100);
+	        },
+	        onNextCue: function onNextCue() {
+	            return (0, _api.skipCue)(videoEl, true);
+	        },
+	        onPreviousCue: function onPreviousCue() {
+	            return (0, _api.skipCue)(videoEl, false);
 	        }
 	    };
 	});
@@ -3127,7 +3172,7 @@ module.exports =
 /* 130 */
 /***/ (function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -3149,30 +3194,55 @@ module.exports =
 
 	var _pause2 = _interopRequireDefault(_pause);
 
+	var _next = __webpack_require__(135);
+
+	var _next2 = _interopRequireDefault(_next);
+
+	var _previous = __webpack_require__(136);
+
+	var _previous2 = _interopRequireDefault(_previous);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	exports.default = function (_ref) {
 	    var onClick = _ref.onClick,
+	        onNextClick = _ref.onNextClick,
+	        onPreviousClick = _ref.onPreviousClick,
 	        paused = _ref.paused,
 	        className = _ref.className,
 	        ariaLabelPlay = _ref.ariaLabelPlay,
 	        ariaLabelPause = _ref.ariaLabelPause;
 
 	    return _react2.default.createElement(
-	        'div',
-	        { className: [_PlayPause2.default.component, className].join(' ') },
+	        "div",
+	        { className: [_PlayPause2.default.component, className].join(" ") },
 	        _react2.default.createElement(
-	            'button',
+	            "button",
 	            {
-	                className: _PlayPause2.default.button,
+	                className: [_PlayPause2.default.button, _PlayPause2.default.previous].join(" "),
+	                type: "button",
+	                onClick: onPreviousClick
+	            },
+	            _react2.default.createElement(_previous2.default, { className: _PlayPause2.default.skip, fill: "#fff" })
+	        ),
+	        _react2.default.createElement(
+	            "button",
+	            {
+	                className: [_PlayPause2.default.button, _PlayPause2.default.play].join(" "),
 	                onClick: onClick,
-	                'aria-label': paused ? ariaLabelPlay : ariaLabelPause,
-	                type: 'button' },
-	            paused ? _react2.default.createElement(_play_arrow2.default, {
-	                className: _PlayPause2.default.icon,
-	                fill: '#fff' }) : _react2.default.createElement(_pause2.default, {
-	                className: _PlayPause2.default.icon,
-	                fill: '#fff' })
+	                "aria-label": paused ? ariaLabelPlay : ariaLabelPause,
+	                type: "button"
+	            },
+	            paused ? _react2.default.createElement(_play_arrow2.default, { className: _PlayPause2.default.icon, fill: "#fff" }) : _react2.default.createElement(_pause2.default, { className: _PlayPause2.default.icon, fill: "#fff" })
+	        ),
+	        _react2.default.createElement(
+	            "button",
+	            {
+	                className: [_PlayPause2.default.button, _PlayPause2.default.next].join(" "),
+	                type: "button",
+	                onClick: onNextClick
+	            },
+	            _react2.default.createElement(_next2.default, { className: _PlayPause2.default.skip, fill: "#fff" })
 	        )
 	    );
 	};
@@ -3182,7 +3252,7 @@ module.exports =
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
-	module.exports = {"component":"rh5v-PlayPause_component","button":"rh5v-PlayPause_button","icon":"rh5v-PlayPause_icon"};
+	module.exports = {"component":"rh5v-PlayPause_component","button":"rh5v-PlayPause_button","play":"rh5v-PlayPause_play","icon":"rh5v-PlayPause_icon","skip":"rh5v-PlayPause_skip","previous":"rh5v-PlayPause_previous","next":"rh5v-PlayPause_next"};
 
 /***/ }),
 /* 132 */,
@@ -3315,6 +3385,132 @@ module.exports =
 /* 135 */
 /***/ (function(module, exports, __webpack_require__) {
 
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _extends2 = __webpack_require__(88);
+
+	var _extends3 = _interopRequireDefault(_extends2);
+
+	var _getPrototypeOf = __webpack_require__(3);
+
+	var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+
+	var _classCallCheck2 = __webpack_require__(30);
+
+	var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+	var _createClass2 = __webpack_require__(31);
+
+	var _createClass3 = _interopRequireDefault(_createClass2);
+
+	var _possibleConstructorReturn2 = __webpack_require__(35);
+
+	var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+	var _inherits2 = __webpack_require__(80);
+
+	var _inherits3 = _interopRequireDefault(_inherits2);
+
+	var _react = __webpack_require__(93);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var SVG = function (_React$Component) {
+	  (0, _inherits3.default)(SVG, _React$Component);
+
+	  function SVG() {
+	    (0, _classCallCheck3.default)(this, SVG);
+	    return (0, _possibleConstructorReturn3.default)(this, (SVG.__proto__ || (0, _getPrototypeOf2.default)(SVG)).apply(this, arguments));
+	  }
+
+	  (0, _createClass3.default)(SVG, [{
+	    key: "render",
+	    value: function render() {
+	      return _react2.default.createElement(
+	        "svg",
+	        (0, _extends3.default)({ xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24" }, this.props),
+	        _react2.default.createElement("path", { d: "M7.58 16.89l5.77-4.07c.56-.4.56-1.24 0-1.63L7.58 7.11C6.91 6.65 6 7.12 6 7.93v8.14c0 .81.91 1.28 1.58.82zM16 7v10c0 .55.45 1 1 1s1-.45 1-1V7c0-.55-.45-1-1-1s-1 .45-1 1z" })
+	      );
+	    }
+	  }]);
+	  return SVG;
+	}(_react2.default.Component);
+
+	exports.default = SVG;
+
+/***/ }),
+/* 136 */
+/***/ (function(module, exports, __webpack_require__) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	var _extends2 = __webpack_require__(88);
+
+	var _extends3 = _interopRequireDefault(_extends2);
+
+	var _getPrototypeOf = __webpack_require__(3);
+
+	var _getPrototypeOf2 = _interopRequireDefault(_getPrototypeOf);
+
+	var _classCallCheck2 = __webpack_require__(30);
+
+	var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
+
+	var _createClass2 = __webpack_require__(31);
+
+	var _createClass3 = _interopRequireDefault(_createClass2);
+
+	var _possibleConstructorReturn2 = __webpack_require__(35);
+
+	var _possibleConstructorReturn3 = _interopRequireDefault(_possibleConstructorReturn2);
+
+	var _inherits2 = __webpack_require__(80);
+
+	var _inherits3 = _interopRequireDefault(_inherits2);
+
+	var _react = __webpack_require__(93);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	var SVG = function (_React$Component) {
+	  (0, _inherits3.default)(SVG, _React$Component);
+
+	  function SVG() {
+	    (0, _classCallCheck3.default)(this, SVG);
+	    return (0, _possibleConstructorReturn3.default)(this, (SVG.__proto__ || (0, _getPrototypeOf2.default)(SVG)).apply(this, arguments));
+	  }
+
+	  (0, _createClass3.default)(SVG, [{
+	    key: "render",
+	    value: function render() {
+	      return _react2.default.createElement(
+	        "svg",
+	        (0, _extends3.default)({ xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", viewBox: "0 0 24 24" }, this.props),
+	        _react2.default.createElement("path", { d: "M7 6c.55 0 1 .45 1 1v10c0 .55-.45 1-1 1s-1-.45-1-1V7c0-.55.45-1 1-1zm3.66 6.82l5.77 4.07c.66.47 1.58-.01 1.58-.82V7.93c0-.81-.91-1.28-1.58-.82l-5.77 4.07a1 1 0 0 0 0 1.64z" })
+	      );
+	    }
+	  }]);
+	  return SVG;
+	}(_react2.default.Component);
+
+	exports.default = SVG;
+
+/***/ }),
+/* 137 */
+/***/ (function(module, exports, __webpack_require__) {
+
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
@@ -3325,11 +3521,11 @@ module.exports =
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Fullscreen = __webpack_require__(136);
+	var _Fullscreen = __webpack_require__(138);
 
 	var _Fullscreen2 = _interopRequireDefault(_Fullscreen);
 
-	var _fullscreen = __webpack_require__(138);
+	var _fullscreen = __webpack_require__(140);
 
 	var _fullscreen2 = _interopRequireDefault(_fullscreen);
 
@@ -3358,15 +3554,15 @@ module.exports =
 	};
 
 /***/ }),
-/* 136 */
+/* 138 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 	module.exports = {"component":"rh5v-Fullscreen_component","button":"rh5v-Fullscreen_button","icon":"rh5v-Fullscreen_icon"};
 
 /***/ }),
-/* 137 */,
-/* 138 */
+/* 139 */,
+/* 140 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3430,7 +3626,7 @@ module.exports =
 	exports.default = SVG;
 
 /***/ }),
-/* 139 */
+/* 141 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -3463,7 +3659,7 @@ module.exports =
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _Overlay = __webpack_require__(140);
+	var _Overlay = __webpack_require__(142);
 
 	var _Overlay2 = _interopRequireDefault(_Overlay);
 
@@ -3471,11 +3667,11 @@ module.exports =
 
 	var _play_arrow2 = _interopRequireDefault(_play_arrow);
 
-	var _spin = __webpack_require__(142);
+	var _spin = __webpack_require__(144);
 
 	var _spin2 = _interopRequireDefault(_spin);
 
-	var _report = __webpack_require__(143);
+	var _report = __webpack_require__(145);
 
 	var _report2 = _interopRequireDefault(_report);
 
@@ -3544,15 +3740,15 @@ module.exports =
 	exports.default = Overlay;
 
 /***/ }),
-/* 140 */
+/* 142 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 	module.exports = {"component":"rh5v-Overlay_component","inner":"rh5v-Overlay_inner","icon":"rh5v-Overlay_icon"};
 
 /***/ }),
-/* 141 */,
-/* 142 */
+/* 143 */,
+/* 144 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3622,7 +3818,7 @@ module.exports =
 	exports.default = SVG;
 
 /***/ }),
-/* 143 */
+/* 145 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3686,7 +3882,7 @@ module.exports =
 	exports.default = SVG;
 
 /***/ }),
-/* 144 */
+/* 146 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3719,19 +3915,19 @@ module.exports =
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _memoizeOne = __webpack_require__(145);
+	var _memoizeOne = __webpack_require__(147);
 
 	var _memoizeOne2 = _interopRequireDefault(_memoizeOne);
 
-	var _Subtitle = __webpack_require__(146);
+	var _Subtitle = __webpack_require__(148);
 
 	var _Subtitle2 = _interopRequireDefault(_Subtitle);
 
-	var _subtitle_button = __webpack_require__(148);
+	var _subtitle_button = __webpack_require__(150);
 
 	var _subtitle_button2 = _interopRequireDefault(_subtitle_button);
 
-	var _subtitle_word_added = __webpack_require__(149);
+	var _subtitle_word_added = __webpack_require__(151);
 
 	var _subtitle_word_added2 = _interopRequireDefault(_subtitle_word_added);
 
@@ -3853,7 +4049,7 @@ module.exports =
 	exports.default = Subtitle;
 
 /***/ }),
-/* 145 */
+/* 147 */
 /***/ (function(module, exports) {
 
 	'use strict';
@@ -3905,15 +4101,15 @@ module.exports =
 
 
 /***/ }),
-/* 146 */
+/* 148 */
 /***/ (function(module, exports) {
 
 	// removed by extract-text-webpack-plugin
 	module.exports = {"subtitle":"rh5v-Subtitle_subtitle","word":"rh5v-Subtitle_word","action":"rh5v-Subtitle_action"};
 
 /***/ }),
-/* 147 */,
-/* 148 */
+/* 149 */,
+/* 150 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -3977,7 +4173,7 @@ module.exports =
 	exports.default = SVG;
 
 /***/ }),
-/* 149 */
+/* 151 */
 /***/ (function(module, exports, __webpack_require__) {
 
 	"use strict";

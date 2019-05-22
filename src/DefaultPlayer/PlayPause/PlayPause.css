@@ -17,10 +17,32 @@
     cursor: pointer;
 }
 
+.button.play > svg {
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+}
+
 .button:focus {
     outline: 0;
 }
 
 .icon {
     padding: 5px;
+}
+
+.skip {
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.previous {
+    text-align: right;
+}
+
+.next {
+    text-align: left;
 }

@@ -11,7 +11,8 @@ import {
     setCurrentTime,
     toggleFullscreen,
     getPercentagePlayed,
-    getPercentageBuffered
+    getPercentageBuffered,
+    skipCue,
 } from './../video/api';
 import styles from './DefaultPlayer.css';
 import Time from './Time/Time';
@@ -42,6 +43,8 @@ const DefaultPlayer = ({
     onSubtitleHover,
     onSubtitleWordClick,
     onSubtitleWordAdd,
+    onNextCue,
+    onPreviousCue,
     ...restProps
 }) => {
     return (
@@ -84,6 +87,8 @@ const DefaultPlayer = ({
                                         ariaLabelPlay={copy.play}
                                         ariaLabelPause={copy.pause}
                                         onClick={onPlayPauseClick}
+                                        onNextClick={onNextCue}
+                                        onPreviousClick={onPreviousCue}
                                         {...video}
                                     />
                                 );
@@ -169,6 +174,8 @@ const connectedPlayer = videoConnect(
         onCaptionsItemClick: (track) => showTrack(state, track),
         onVolumeChange: (e) => setVolume(videoEl, state, e.target.value),
         onSeekChange: (e) => setCurrentTime(videoEl, state, e.target.value * state.duration / 100),
+        onNextCue: () => skipCue(videoEl, true),
+        onPreviousCue: () => skipCue(videoEl, false),
     })
 );
 
